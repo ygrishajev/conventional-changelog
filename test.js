@@ -189,7 +189,7 @@ test('should follow conventional commit strategy with prereleaase', async t => {
   assert.equal(version4, '2.0.0-alpha.1');
 });
 
-test.only('should follow conventional commit strategy with prereleaase and custom prefix', async t => {
+test('should follow conventional commit strategy with prereleaase and custom prefix', async t => {
   setup();
   const prefix = 'scope/';
   sh.exec(`git tag ${prefix}v1.2.1`);
@@ -394,6 +394,32 @@ test('should not bump when recommended bump returns null', async () => {
     const whatBump = commits => ({ level: null, reason: 'Parsed commits do not warrant a version bump.' });
     const options = getOptions({ whatBump });
     const { version } = await runTasks(...options);
+    assert.equal(version, undefined);
+  }
+});
+
+test('should not bump a pre-release when recommended bump returns null', async () => {
+  setup();
+  sh.exec(`git tag 1.0.0`);
+  add('fix', 'bar');
+  add('feat', 'baz');
+  {
+    const options = getOptions({ preset: 'angular' });
+    const { version } = await runTasks(...options);
+    assert.equal(version, '1.1.0');
+  }
+  add('blorp', 'faz');
+  add('faz', 'blorp');
+  {
+    const options = getOptions({ preset: 'angular' });
+    const { version } = await runTasks(...options);
+    assert.equal(version, '1.1.0'); // Incorrect result from conventional-recommended-bump
+  }
+  {
+    const whatBump = commits => ({ level: null, reason: 'Parsed commits do not warrant a version bump.' });
+    const [config, container] = getOptions({ whatBump });
+    config.preRelease = 'alpha';
+    const { version } = await runTasks(config, container);
     assert.equal(version, undefined);
   }
 });
