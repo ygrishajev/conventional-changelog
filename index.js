@@ -46,8 +46,8 @@ class ConventionalChangelog extends Plugin {
       }
       if (increment && semver.valid(increment)) {
         return increment;
-      } else if (isPreRelease) {
-        if (releaseType && (options.strictSemVer || !semver.prerelease(latestVersion))) {
+      } else if (releaseType && isPreRelease) {
+        if ((options.strictSemVer || !semver.prerelease(latestVersion))) {
           return semver.inc(latestVersion, `pre${releaseType}`, preReleaseId);
         }
 
